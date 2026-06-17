@@ -1,0 +1,371 @@
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+enum TenantType {
+  RT
+  RW
+  PERUMAHAN
+  DESA
+  KOMUNITAS
+}
+
+enum Role {
+  SUPER_ADMIN
+  RW
+  RT
+  SEKRETARIS
+  BENDAHARA
+  WARGA
+}
+
+enum Gender {
+  LAKI_LAKI
+  PEREMPUAN
+}
+
+enum Religion {
+  ISLAM
+  KRISTEN
+  KATOLIK
+  HINDU
+  BUDHA
+  KONGHUCU
+  LAINNYA
+}
+
+enum MaritalStatus {
+  BELUM_KAWIN
+  KAWIN
+  CERAI_HIDUP
+  CERAI_MATI
+}
+
+enum LetterStatus {
+  PENDING
+  REVIEW
+  APPROVED
+  READY_FOR_PICKUP
+  COMPLETED
+  REJECTED
+}
+
+enum DueType {
+  BULANAN
+  KEBERSIHAN
+  KEAMANAN
+  SOSIAL
+  CUSTOM
+}
+
+enum PaymentStatus {
+  PENDING
+  SUCCESS
+  FAILED
+}
+
+enum Priority {
+  NORMAL
+  PENTING
+  DARURAT
+}
+
+enum ComplaintStatus {
+  BARU
+  DIPROSES
+  SELESAI
+}
+
+model Tenant {
+  id        String   @id @default(uuid())
+  code      String   @unique @default(cuid())
+  name      String
+  type      TenantType
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  users                User[]
+  citizens             Citizen[]
+  families             Family[]
+  letters              Letter[]
+  letterTemplates      LetterTemplate[]
+  financeTransactions  FinanceTransaction[]
+  dues                 Due[]
+  announcements        Announcement[]
+  complaints           Complaint[]
+  notifications        Notification[]
+  subscriptions        Subscription[]
+  auditLogs            AuditLog[]
+}
+
+model Subscription {
+  id          String   @id @default(uuid())
+  tenantId    String
+  tenant      Tenant   @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  planName    String   // FREE, BASIC, PRO, ENTERPRISE
+  startDate   DateTime
+  endDate     DateTime
+  isActive    Boolean  @default(true)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  @@index([tenantId])
+}
+
+model User {
+  id        String   @id @default(uuid())
+  tenantId  String?
+  tenant    Tenant?  @relation(fields: [tenantId], references: [id], onDelete: SetNull)
+  email     String   @unique
+  name      String
+  role      Role
+  avatarUrl   String?
+  isOnboarded Boolean @default(false)
+
+  nik         String?   @unique
+  phone       String?
+  address     String?
+  provinceId  String?
+  provinceName String?
+  regencyId   String?
+  regencyName String?
+  districtId  String?
+  districtName String?
+  villageId   String?
+  villageName String?
+  rt          String?
+  rw          String?
+  gender      Gender?
+  birthPlace  String?
+  birthDate   DateTime?
+
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+
+  deviceTokens DeviceToken[]
+  auditLogs    AuditLog[]
+  payments     Payment[]
+  notifications Notification[]
+  citizen      Citizen?
+
+  @@index([tenantId])
+}
+
+model DeviceToken {
+  id        String   @id @default(uuid())
+  userId    String
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  fcmToken  String
+  platform  String   // ANDROID, IOS, WEB
+  createdAt DateTime @default(now())
+
+  @@index([userId])
+}
+
+model Family {
+  id        String   @id @default(uuid())
+  tenantId  String
+  tenant    Tenant   @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  noKk      String   @unique
+  address   String
+  rt        String
+  rw        String
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  deletedAt DateTime?
+
+  citizens  Citizen[]
+  dues      Due[]
+
+  @@index([tenantId])
+}
+
+model Citizen {
+  id             String   @id @default(uuid())
+  tenantId       String
+  tenant         Tenant   @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  familyId       String?
+  family         Family?  @relation(fields: [familyId], references: [id], onDelete: SetNull)
+  userId         String?  @unique
+  user           User?    @relation(fields: [userId], references: [id], onDelete: SetNull)
+  nik            String   @unique
+  name           String
+  gender         Gender
+  birthPlace     String
+  birthDate      DateTime
+  religion       Religion
+  maritalStatus  MaritalStatus
+  occupation     String
+  phone          String?
+  email          String?
+  isHeadOfFamily Boolean  @default(false)
+  rt             String
+  rw             String
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
+  deletedAt      DateTime?
+
+  letters        Letter[]
+  complaints     Complaint[]
+
+  @@index([tenantId])
+}
+
+model LetterTemplate {
+  id        String   @id @default(uuid())
+  tenantId  String
+  tenant    Tenant   @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  name      String
+  content   String   // HTML or Markdown
+  isActive  Boolean  @default(true)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  letters   Letter[]
+
+  @@index([tenantId])
+}
+
+model Letter {
+  id               String   @id @default(uuid())
+  tenantId         String
+  tenant           Tenant   @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  letterTemplateId String
+  template         LetterTemplate @relation(fields: [letterTemplateId], references: [id])
+  citizenId        String
+  citizen          Citizen  @relation(fields: [citizenId], references: [id], onDelete: Cascade)
+  letterNumber     String?
+  status           LetterStatus @default(PENDING)
+  notes            String?
+  pdfUrl           String?
+  createdAt        DateTime @default(now())
+  updatedAt        DateTime @updatedAt
+
+  @@index([tenantId])
+}
+
+model Due {
+  id          String   @id @default(uuid())
+  tenantId    String
+  tenant      Tenant   @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  familyId    String
+  family      Family   @relation(fields: [familyId], references: [id], onDelete: Cascade)
+  title       String
+  amount      Float
+  type        DueType
+  dueDate     DateTime
+  isPaid      Boolean  @default(false)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  payments    Payment[]
+
+  @@index([tenantId])
+}
+
+model Payment {
+  id                   String   @id @default(uuid())
+  dueId                String
+  due                  Due      @relation(fields: [dueId], references: [id], onDelete: Cascade)
+  userId               String
+  user                 User     @relation(fields: [userId], references: [id])
+  amount               Float
+  status               PaymentStatus @default(PENDING)
+  paymentMethod        String?  // CASH, TRANSFER, QRIS
+  proofUrl             String?
+  createdAt            DateTime @default(now())
+  updatedAt            DateTime @updatedAt
+
+  financeTransactionId String?  @unique
+  financeTransaction   FinanceTransaction? @relation(fields: [financeTransactionId], references: [id])
+
+  @@index([dueId])
+}
+
+model FinanceTransaction {
+  id          String   @id @default(uuid())
+  tenantId    String
+  tenant      Tenant   @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  type        String   // INCOME, EXPENSE
+  category    String
+  amount      Float
+  description String
+  proofUrl    String?
+  date        DateTime
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  transactionNumber String? @unique
+  payment     Payment?
+
+  @@index([tenantId])
+  @@index([tenantId, date])
+}
+
+model Announcement {
+  id          String   @id @default(uuid())
+  tenantId    String
+  tenant      Tenant   @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  title       String
+  content     String
+  priority    Priority @default(NORMAL)
+  attachmentUrl String?
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  @@index([tenantId])
+}
+
+model Complaint {
+  id          String   @id @default(uuid())
+  tenantId    String
+  tenant      Tenant   @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  citizenId   String
+  citizen     Citizen  @relation(fields: [citizenId], references: [id], onDelete: Cascade)
+  title       String
+  description String
+  photoUrl    String?
+  location    String?
+  status      ComplaintStatus @default(BARU)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  @@index([tenantId])
+}
+
+model Notification {
+  id          String   @id @default(uuid())
+  tenantId    String
+  tenant      Tenant   @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  userId      String
+  user        User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  title       String
+  message     String
+  type        String   // INFO, WARNING, SUCCESS
+  isRead      Boolean  @default(false)
+  createdAt   DateTime @default(now())
+
+  @@index([tenantId])
+  @@index([userId])
+}
+
+model AuditLog {
+  id          String   @id @default(uuid())
+  tenantId    String
+  tenant      Tenant   @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  userId      String
+  user        User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  action      String   // CREATE, UPDATE, DELETE
+  entity      String
+  entityId    String
+  oldValues   String?  // JSON
+  newValues   String?  // JSON
+  createdAt   DateTime @default(now())
+
+  @@index([tenantId])
+}
