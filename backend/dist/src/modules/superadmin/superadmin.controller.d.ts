@@ -17,21 +17,21 @@ export declare class SuperadminController {
         };
         subscriptions: {
             id: string;
+            tenantId: string;
             createdAt: Date;
             updatedAt: Date;
             isActive: boolean;
-            tenantId: string;
             planName: string;
             startDate: Date;
             endDate: Date;
         }[];
     } & {
         id: string;
-        code: string;
         name: string;
-        type: import(".prisma/client").$Enums.TenantType;
         createdAt: Date;
         updatedAt: Date;
+        type: import(".prisma/client").$Enums.TenantType;
+        code: string;
     })[]>;
     createTenant(body: {
         name: string;
@@ -41,40 +41,40 @@ export declare class SuperadminController {
     }): Promise<{
         subscriptions: {
             id: string;
+            tenantId: string;
             createdAt: Date;
             updatedAt: Date;
             isActive: boolean;
-            tenantId: string;
             planName: string;
             startDate: Date;
             endDate: Date;
         }[];
     } & {
         id: string;
-        code: string;
         name: string;
-        type: import(".prisma/client").$Enums.TenantType;
         createdAt: Date;
         updatedAt: Date;
+        type: import(".prisma/client").$Enums.TenantType;
+        code: string;
     }>;
     updateTenant(id: string, body: {
         name?: string;
         type?: any;
     }): Promise<{
         id: string;
-        code: string;
         name: string;
-        type: import(".prisma/client").$Enums.TenantType;
         createdAt: Date;
         updatedAt: Date;
+        type: import(".prisma/client").$Enums.TenantType;
+        code: string;
     }>;
     deleteTenant(id: string): Promise<{
         id: string;
-        code: string;
         name: string;
-        type: import(".prisma/client").$Enums.TenantType;
         createdAt: Date;
         updatedAt: Date;
+        type: import(".prisma/client").$Enums.TenantType;
+        code: string;
     }>;
     updateTenantSubscription(id: string, body: {
         planName?: string;
@@ -82,34 +82,32 @@ export declare class SuperadminController {
         isActive?: boolean;
     }): Promise<{
         id: string;
+        tenantId: string;
         createdAt: Date;
         updatedAt: Date;
         isActive: boolean;
-        tenantId: string;
         planName: string;
         startDate: Date;
         endDate: Date;
     }>;
     getAllUsers(): Promise<{
         id: string;
+        email: string;
         name: string;
+        role: import(".prisma/client").$Enums.Role;
         createdAt: Date;
         tenant: {
             name: string;
             type: import(".prisma/client").$Enums.TenantType;
         } | null;
-        email: string;
-        role: import(".prisma/client").$Enums.Role;
     }[]>;
     updateUserRole(id: string, body: {
         role: string;
     }): Promise<{
         id: string;
-        name: string;
-        createdAt: Date;
-        updatedAt: Date;
         tenantId: string | null;
         email: string;
+        name: string;
         role: import(".prisma/client").$Enums.Role;
         avatarUrl: string | null;
         isOnboarded: boolean;
@@ -129,14 +127,14 @@ export declare class SuperadminController {
         gender: import(".prisma/client").$Enums.Gender | null;
         birthPlace: string | null;
         birthDate: Date | null;
+        createdAt: Date;
+        updatedAt: Date;
     }>;
     deleteUser(id: string): Promise<{
         id: string;
-        name: string;
-        createdAt: Date;
-        updatedAt: Date;
         tenantId: string | null;
         email: string;
+        name: string;
         role: import(".prisma/client").$Enums.Role;
         avatarUrl: string | null;
         isOnboarded: boolean;
@@ -156,19 +154,21 @@ export declare class SuperadminController {
         gender: import(".prisma/client").$Enums.Gender | null;
         birthPlace: string | null;
         birthDate: Date | null;
+        createdAt: Date;
+        updatedAt: Date;
     }>;
     getGlobalAuditLogs(): Promise<({
-        tenant: {
-            name: string;
-        };
         user: {
             name: string;
             role: import(".prisma/client").$Enums.Role;
         };
+        tenant: {
+            name: string;
+        };
     } & {
         id: string;
-        createdAt: Date;
         tenantId: string;
+        createdAt: Date;
         userId: string;
         action: string;
         entity: string;
