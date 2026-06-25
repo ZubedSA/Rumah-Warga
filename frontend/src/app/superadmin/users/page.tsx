@@ -8,7 +8,7 @@ import { Button } from '@/components/ui/button';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Label } from '@/components/ui/label';
-import { ShieldAlert, UserCog } from 'lucide-react';
+import { ShieldAlert, UserCog, Trash2 } from 'lucide-react';
 import { apiClient } from '@/lib/api-client';
 import { useAuthStore } from '@/store/authStore';
 import { toast } from 'sonner';
@@ -21,6 +21,7 @@ export default function SuperadminUsers() {
   const [editingUser, setEditingUser] = useState<any>(null);
   const [editRole, setEditRole] = useState('WARGA');
   const [isUpdating, setIsUpdating] = useState(false);
+  const [isDeleting, setIsDeleting] = useState<string | null>(null);
 
   const accessToken = useAuthStore(state => state.accessToken);
 
@@ -65,6 +66,24 @@ export default function SuperadminUsers() {
       toast.error('Gagal memperbarui hak akses pengguna');
     } finally {
       setIsUpdating(false);
+    }
+  };
+
+  const handleDeleteUser = async (user: any) => {
+    if (!confirm(`PERINGATAN: Anda akan menghapus permanen pengguna ${user.name}. Aksi ini tidak dapat dibatalkan. Lanjutkan?`)) return;
+
+    setIsDeleting(user.id);
+    try {
+      await apiClient.delete(`/superadmin/users/${user.id}`, {
+        headers: { Authorization: `Bearer ${accessToken}` }
+      });
+      toast.success('Pengguna berhasil dihapus!');
+      fetchUsers();
+    } catch (error) {
+      console.error(error);
+      toast.error('Gagal menghapus pengguna');
+    } finally {
+      setIsDeleting(null);
     }
   };
 
@@ -146,61 +165,76 @@ export default function SuperadminUsers() {
                       </Badge>
                     </TableCell>
                     <TableCell className="text-right">
-                       <Dialog open={editingUser?.id === user.id} onOpenChange={(open) => {
-                         if (open) {
-                           setEditingUser(user);
-                           setEditRole(user.role);
-                         } else {
-                           setEditingUser(null);
-                         }
-                       }}>
-                         <DialogTrigger className="inline-flex items-center justify-center whitespace-nowrap text-sm font-medium w-10 h-10 text-slate-400 hover:text-indigo-600 hover:bg-indigo-50 transition-colors rounded-xl">
-                           <UserCog className="w-4 h-4" />
-                         </DialogTrigger>
-                         <DialogContent className="sm:max-w-[425px] rounded-3xl">
-                           <DialogHeader>
-                             <DialogTitle className="text-xl font-black text-slate-800">Ubah Hak Akses</DialogTitle>
-                           </DialogHeader>
-                           <form onSubmit={handleUpdateRole} className="space-y-4 mt-4">
-                             <div className="p-4 bg-slate-50 rounded-2xl flex items-center gap-4 mb-4">
-                                <div className="w-12 h-12 rounded-full bg-white flex items-center justify-center font-bold text-slate-600 shadow-sm">
-                                  {user.name.charAt(0).toUpperCase()}
-                                </div>
-                                <div>
-                                  <div className="font-black text-slate-800">{user.name}</div>
-                                  <div className="text-xs font-bold text-slate-500">{user.email}</div>
-                                </div>
-                             </div>
+                       <div className="flex items-center justify-end gap-2">
+                         <Dialog open={editingUser?.id === user.id} onOpenChange={(open) => {
+                           if (open) {
+                             setEditingUser(user);
+                             setEditRole(user.role);
+                           } else {
+                             setEditingUser(null);
+                           }
+                         }}>
+                           <DialogTrigger className="inline-flex items-center justify-center whitespace-nowrap text-sm font-medium w-10 h-10 text-slate-400 hover:text-indigo-600 hover:bg-indigo-50 transition-colors rounded-xl">
+                             <UserCog className="w-4 h-4" />
+                           </DialogTrigger>
+                           <DialogContent className="sm:max-w-[425px] rounded-3xl">
+                             <DialogHeader>
+                               <DialogTitle className="text-xl font-black text-slate-800">Ubah Hak Akses</DialogTitle>
+                             </DialogHeader>
+                             <form onSubmit={handleUpdateRole} className="space-y-4 mt-4">
+                               <div className="p-4 bg-slate-50 rounded-2xl flex items-center gap-4 mb-4">
+                                  <div className="w-12 h-12 rounded-full bg-white flex items-center justify-center font-bold text-slate-600 shadow-sm">
+                                    {user.name.charAt(0).toUpperCase()}
+                                  </div>
+                                  <div>
+                                    <div className="font-black text-slate-800">{user.name}</div>
+                                    <div className="text-xs font-bold text-slate-500">{user.email}</div>
+                                  </div>
+                               </div>
 
-                             <div className="space-y-2">
-                               <Label className="text-sm font-bold text-slate-700">Pilih Role Baru</Label>
-                               <Select value={editRole} onValueChange={(val) => setEditRole(val || 'WARGA')}>
-                                 <SelectTrigger className="rounded-xl">
-                                   <SelectValue placeholder="Pilih Role" />
-                                 </SelectTrigger>
-                                 <SelectContent className="rounded-xl">
-                                   <SelectItem value="WARGA">Warga (WARGA)</SelectItem>
-                                   <SelectItem value="RT">Admin RT (RT)</SelectItem>
-                                   <SelectItem value="RW">Admin RW (RW)</SelectItem>
-                                   <SelectItem value="SEKRETARIS">Sekretaris (SEKRETARIS)</SelectItem>
-                                   <SelectItem value="BENDAHARA">Bendahara (BENDAHARA)</SelectItem>
-                                   <div className="h-px bg-slate-100 my-1"></div>
-                                   <SelectItem value="SUPER_ADMIN" className="text-rose-600 focus:text-rose-700 focus:bg-rose-50">
-                                      <div className="flex items-center gap-2">
-                                        <ShieldAlert className="w-4 h-4" />
-                                        <span>Super Admin (Global)</span>
-                                      </div>
-                                   </SelectItem>
-                                 </SelectContent>
-                               </Select>
-                             </div>
+                               <div className="space-y-2">
+                                 <Label className="text-sm font-bold text-slate-700">Pilih Role Baru</Label>
+                                 <Select value={editRole} onValueChange={(val) => setEditRole(val || 'WARGA')}>
+                                   <SelectTrigger className="rounded-xl">
+                                     <SelectValue placeholder="Pilih Role" />
+                                   </SelectTrigger>
+                                   <SelectContent className="rounded-xl">
+                                     <SelectItem value="WARGA">Warga (WARGA)</SelectItem>
+                                     <SelectItem value="RT">Admin RT (RT)</SelectItem>
+                                     <SelectItem value="RW">Admin RW (RW)</SelectItem>
+                                     <SelectItem value="SEKRETARIS">Sekretaris (SEKRETARIS)</SelectItem>
+                                     <SelectItem value="BENDAHARA">Bendahara (BENDAHARA)</SelectItem>
+                                     <div className="h-px bg-slate-100 my-1"></div>
+                                     <SelectItem value="SUPER_ADMIN" className="text-rose-600 focus:text-rose-700 focus:bg-rose-50">
+                                        <div className="flex items-center gap-2">
+                                          <ShieldAlert className="w-4 h-4" />
+                                          <span>Super Admin (Global)</span>
+                                        </div>
+                                     </SelectItem>
+                                   </SelectContent>
+                                 </Select>
+                               </div>
 
-                             <Button type="submit" className="w-full bg-primary hover:bg-primary/90 text-white rounded-xl py-6 font-bold mt-4" disabled={isUpdating}>
-                               {isUpdating ? 'Menyimpan...' : 'Simpan Perubahan Role'}
-                             </Button>
-                           </form>
-                         </DialogContent>
-                       </Dialog>
+                               <Button type="submit" className="w-full bg-primary hover:bg-primary/90 text-white rounded-xl py-6 font-bold mt-4" disabled={isUpdating}>
+                                 {isUpdating ? 'Menyimpan...' : 'Simpan Perubahan Role'}
+                               </Button>
+                             </form>
+                           </DialogContent>
+                         </Dialog>
+
+                         <button 
+                           onClick={() => handleDeleteUser(user)}
+                           disabled={isDeleting === user.id}
+                           className="inline-flex items-center justify-center whitespace-nowrap text-sm font-medium w-10 h-10 text-slate-400 hover:text-rose-600 hover:bg-rose-50 transition-colors rounded-xl disabled:opacity-50"
+                           title="Hapus Pengguna"
+                         >
+                           {isDeleting === user.id ? (
+                             <div className="w-4 h-4 border-2 border-rose-200 border-t-rose-600 rounded-full animate-spin"></div>
+                           ) : (
+                             <Trash2 className="w-4 h-4" />
+                           )}
+                         </button>
+                       </div>
                     </TableCell>
                   </TableRow>
                 ))

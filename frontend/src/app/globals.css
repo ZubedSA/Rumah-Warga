@@ -110,6 +110,23 @@
     -moz-osx-font-smoothing: grayscale;
     scroll-behavior: smooth;
   }
+
+  /* Custom Professional Scrollbar */
+  ::-webkit-scrollbar {
+    width: 6px;
+    height: 6px;
+  }
+  ::-webkit-scrollbar-track {
+    background: transparent;
+    border-radius: 10px;
+  }
+  ::-webkit-scrollbar-thumb {
+    background: #CBD5E1; /* slate-300 */
+    border-radius: 10px;
+  }
+  ::-webkit-scrollbar-thumb:hover {
+    background: #94A3B8; /* slate-400 */
+  }
 }
 
 /* Light Premium UI Utility Classes */

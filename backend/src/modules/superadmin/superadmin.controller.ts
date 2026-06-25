@@ -56,6 +56,11 @@ export class SuperadminController {
     return this.superadminService.updateUserRole(id, body);
   }
 
+  @Delete('users/:id')
+  deleteUser(@Param('id') id: string) {
+    return this.superadminService.deleteUser(id);
+  }
+
   @Get('logs')
   getGlobalAuditLogs() {
     return this.superadminService.getGlobalAuditLogs();

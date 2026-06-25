@@ -142,6 +142,12 @@ export class SuperadminService {
     });
   }
 
+  async deleteUser(id: string) {
+    return this.prisma.user.delete({
+      where: { id }
+    });
+  }
+
   async getGlobalAuditLogs() {
     return this.prisma.auditLog.findMany({
       include: {

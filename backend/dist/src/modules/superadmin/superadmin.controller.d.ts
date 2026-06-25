@@ -130,6 +130,33 @@ export declare class SuperadminController {
         birthPlace: string | null;
         birthDate: Date | null;
     }>;
+    deleteUser(id: string): Promise<{
+        id: string;
+        name: string;
+        createdAt: Date;
+        updatedAt: Date;
+        tenantId: string | null;
+        email: string;
+        role: import(".prisma/client").$Enums.Role;
+        avatarUrl: string | null;
+        isOnboarded: boolean;
+        nik: string | null;
+        phone: string | null;
+        address: string | null;
+        provinceId: string | null;
+        provinceName: string | null;
+        regencyId: string | null;
+        regencyName: string | null;
+        districtId: string | null;
+        districtName: string | null;
+        villageId: string | null;
+        villageName: string | null;
+        rt: string | null;
+        rw: string | null;
+        gender: import(".prisma/client").$Enums.Gender | null;
+        birthPlace: string | null;
+        birthDate: Date | null;
+    }>;
     getGlobalAuditLogs(): Promise<({
         tenant: {
             name: string;

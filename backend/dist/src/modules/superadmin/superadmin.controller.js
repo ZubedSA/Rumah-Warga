@@ -48,6 +48,9 @@ let SuperadminController = class SuperadminController {
     updateUserRole(id, body) {
         return this.superadminService.updateUserRole(id, body);
     }
+    deleteUser(id) {
+        return this.superadminService.deleteUser(id);
+    }
     getGlobalAuditLogs() {
         return this.superadminService.getGlobalAuditLogs();
     }
@@ -109,6 +112,13 @@ __decorate([
     __metadata("design:paramtypes", [String, Object]),
     __metadata("design:returntype", void 0)
 ], SuperadminController.prototype, "updateUserRole", null);
+__decorate([
+    (0, common_1.Delete)('users/:id'),
+    __param(0, (0, common_1.Param)('id')),
+    __metadata("design:type", Function),
+    __metadata("design:paramtypes", [String]),
+    __metadata("design:returntype", void 0)
+], SuperadminController.prototype, "deleteUser", null);
 __decorate([
     (0, common_1.Get)('logs'),
     __metadata("design:type", Function),

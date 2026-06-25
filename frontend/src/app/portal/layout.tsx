@@ -100,7 +100,7 @@ export default function PortalLayout({ children }: { children: React.ReactNode }
 
       {/* Main Content Area */}
       <main className="flex-1 flex flex-col min-w-0 relative z-10 pb-28 md:pb-10">
-        <div className="flex-1 overflow-y-auto p-4 md:p-10 relative scroll-smooth">
+        <div className="flex-1 overflow-y-auto px-6 py-6 md:p-10 relative scroll-smooth">
           <div className="max-w-4xl mx-auto animate-in fade-in duration-700">
             {children}
           </div>
