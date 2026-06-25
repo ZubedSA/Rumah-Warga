@@ -82,7 +82,7 @@ export default function LettersPage() {
             />
           </div>
           <div className="w-full sm:w-[200px]">
-            <Select value={statusFilter} onValueChange={setStatusFilter}>
+            <Select value={statusFilter} onValueChange={(val) => setStatusFilter(val || 'ALL')}>
               <SelectTrigger className="bg-slate-50/50 border-slate-100 rounded-2xl h-[52px]">
                 <div className="flex items-center gap-2">
                   <Filter className="w-4 h-4 text-slate-400" />
